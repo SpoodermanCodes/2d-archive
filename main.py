@@ -5,8 +5,9 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.scrollview import ScrollView
-from kivy.graphics import Color, Rectangle, RoundedRectangle
+from kivy.graphics import Color, Rectangle
 from kivy.core.window import Window
+from kivy.clock import Clock
 from kivy.metrics import dp
 
 from games.snake         import SnakeScreen
@@ -87,21 +88,23 @@ class MenuScreen(Screen):
 class ArcadeApp(App):
     def build(self):
         Window.clearcolor = (0.05, 0.05, 0.1, 1)
-        sm = ScreenManager()
+        self.sm = ScreenManager()
+        Clock.schedule_once(self._init_screens)
+        return self.sm
+
+    def _init_screens(self, dt):
+        from shared.ui import make_back_button
+        sm = self.sm
 
         menu = MenuScreen(sm)
         sm.add_widget(menu)
 
         for key, _, ScreenClass, _ in GAMES:
             screen = ScreenClass(name=key)
-            # add back button to each game screen
-            from shared.ui import make_back_button
             back = make_back_button(lambda btn, s=sm: self._back(s))
             back.pos = (10, Window.height - 50)
             screen.add_widget(back)
             sm.add_widget(screen)
-
-        return sm
 
     def _back(self, sm):
         sm.transition = SlideTransition(direction='right')

@@ -1,6 +1,7 @@
-import random, copy
+import random
 from kivy.uix.screenmanager import Screen
 from kivy.uix.label import Label
+from kivy.uix.floatlayout import FloatLayout
 from kivy.graphics import Color, Rectangle
 from kivy.clock import Clock
 from kivy.core.window import Window
@@ -18,14 +19,21 @@ def _rows():
 class TetrisScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.score_label = Label(pos=(Window.width*0.35, Window.height-42), font_size=18, color=(1,1,1,1))
-        self.hi_label    = Label(pos=(Window.width*0.6,  Window.height-42), font_size=18, color=(1,1,1,1))
-        self.msg_label   = Label(text='Tap to start', pos=(Window.width*0.3, Window.height//2-20), font_size=22, color=(1,1,0,1))
-        self.add_widget(self.score_label)
-        self.add_widget(self.hi_label)
-        self.add_widget(self.msg_label)
+        layout = FloatLayout()
+        self.score_label = Label(size_hint=(None, None), pos_hint={'center_x': 0.45, 'top': 0.99}, font_size=18, color=(1,1,1,1))
+        self.hi_label    = Label(size_hint=(None, None), pos_hint={'center_x': 0.75, 'top': 0.99}, font_size=18, color=(1,1,1,1))
+        self.msg_label   = Label(text='Tap to start', size_hint=(None, None), pos_hint={'center_x': 0.5, 'center_y': 0.5}, font_size=22, color=(1,1,0,1))
+        layout.add_widget(self.score_label)
+        layout.add_widget(self.hi_label)
+        layout.add_widget(self.msg_label)
+        self.add_widget(layout)
         self._clock = None
         self.touch_start = None
+        self.piece = None
+        self.board = []
+        self.score = 0
+        self.game_over = False
+        self.started = False
 
     def on_enter(self):
         self.reset()
@@ -149,16 +157,13 @@ class TetrisScreen(Screen):
             Rectangle(pos=(0,0), size=(Window.width, Window.height))
             Color(0.1, 0.1, 0.1, 1)
             Rectangle(pos=(0, Window.height-HEADER), size=(Window.width, HEADER))
-            # board bg
             Color(0.05, 0.05, 0.05, 1)
             Rectangle(pos=(ox, oy), size=(COLS*BLOCK, rows*BLOCK))
-            # locked cells
             for r in range(rows):
                 for c in range(COLS):
                     if self.board[r][c]:
                         Color(*self.board[r][c])
                         Rectangle(pos=(ox+c*BLOCK+1, oy+r*BLOCK+1), size=(BLOCK-2, BLOCK-2))
-            # active piece
             if self.piece:
                 Color(*self.piece['color'])
                 for r, row in enumerate(self.piece['shape']):
@@ -167,7 +172,6 @@ class TetrisScreen(Screen):
                             px = ox + (self.piece['x']+c)*BLOCK
                             py = oy + (self.piece['y']-r)*BLOCK
                             Rectangle(pos=(px+1, py+1), size=(BLOCK-2, BLOCK-2))
-            # grid lines
             Color(0.15, 0.15, 0.15, 1)
             for c in range(COLS+1):
                 Rectangle(pos=(ox+c*BLOCK, oy), size=(1, rows*BLOCK))

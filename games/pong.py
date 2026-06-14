@@ -1,5 +1,6 @@
 from kivy.uix.screenmanager import Screen
 from kivy.uix.label import Label
+from kivy.uix.floatlayout import FloatLayout
 from kivy.graphics import Color, Rectangle, Ellipse
 from kivy.clock import Clock
 from kivy.core.window import Window
@@ -15,11 +16,19 @@ WIN_SCORE = 7
 class PongScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.score_label = Label(pos=(Window.width*0.35, Window.height-42), font_size=20, color=(1,1,1,1))
-        self.msg_label   = Label(text='Tap to start', pos=(Window.width*0.3, Window.height//2-20), font_size=22, color=(1,1,0,1))
-        self.add_widget(self.score_label)
-        self.add_widget(self.msg_label)
+        layout = FloatLayout()
+        self.score_label = Label(size_hint=(None, None), pos_hint={'center_x': 0.5, 'top': 0.99}, font_size=20, color=(1,1,1,1))
+        self.msg_label   = Label(text='Tap to start', size_hint=(None, None), pos_hint={'center_x': 0.5, 'center_y': 0.5}, font_size=22, color=(1,1,0,1))
+        layout.add_widget(self.score_label)
+        layout.add_widget(self.msg_label)
+        self.add_widget(layout)
         self._clock = None
+        self.player_y = 0
+        self.ai_y = 0
+        self.ball_x = self.ball_y = 0
+        self.ball_vx = self.ball_vy = 0
+        self.p_score = self.ai_score = 0
+        self.started = self.game_over = False
 
     def on_enter(self):
         self.reset()
@@ -62,43 +71,29 @@ class PongScreen(Screen):
             self._draw(); return
 
         w, h = Window.width, Window.height
-
         self.ball_x += self.ball_vx
         self.ball_y += self.ball_vy
 
-        # top/bottom bounce
-        if self.ball_y <= HEADER + BALL//2:
-            self.ball_vy = abs(self.ball_vy)
-        if self.ball_y >= h - BALL//2:
-            self.ball_vy = -abs(self.ball_vy)
+        if self.ball_y <= HEADER + BALL//2: self.ball_vy = abs(self.ball_vy)
+        if self.ball_y >= h - BALL//2:      self.ball_vy = -abs(self.ball_vy)
 
-        # AI tracks ball
         ai_center = self.ai_y + PAD_H // 2
-        if ai_center < self.ball_y - 5:  self.ai_y += 3
-        elif ai_center > self.ball_y + 5: self.ai_y -= 3
+        if ai_center < self.ball_y - 5:   self.ai_y += 3
+        elif ai_center > self.ball_y + 5:  self.ai_y -= 3
         self.ai_y = max(HEADER, min(h - PAD_H, self.ai_y))
 
-        # player paddle (left=AI, right=player) — left side is AI
         ai_x = 20
         pl_x = w - 20 - PAD_W
 
-        # ball vs AI paddle
-        if (self.ball_x - BALL//2 <= ai_x + PAD_W and
-                self.ai_y <= self.ball_y <= self.ai_y + PAD_H):
+        if (self.ball_x - BALL//2 <= ai_x + PAD_W and self.ai_y <= self.ball_y <= self.ai_y + PAD_H):
             self.ball_vx = abs(self.ball_vx)
-
-        # ball vs player paddle
-        if (self.ball_x + BALL//2 >= pl_x and
-                self.player_y <= self.ball_y <= self.player_y + PAD_H):
+        if (self.ball_x + BALL//2 >= pl_x and self.player_y <= self.ball_y <= self.player_y + PAD_H):
             self.ball_vx = -abs(self.ball_vx)
 
-        # scoring
         if self.ball_x < 0:
-            self.ai_score += 1
-            self._reset_ball()
+            self.ai_score += 1; self._reset_ball()
         if self.ball_x > w:
-            self.p_score += 1
-            self._reset_ball()
+            self.p_score += 1;  self._reset_ball()
 
         if self.p_score >= WIN_SCORE or self.ai_score >= WIN_SCORE:
             self.game_over = True
@@ -125,14 +120,11 @@ class PongScreen(Screen):
             Rectangle(pos=(0,0), size=(w, h))
             Color(0.1, 0.1, 0.1, 1)
             Rectangle(pos=(0, h-HEADER), size=(w, HEADER))
-            # center line
             Color(0.3, 0.3, 0.3, 1)
             for y in range(HEADER, h, 20):
                 Rectangle(pos=(w//2-1, y), size=(2, 10))
-            # paddles
             Color(1, 1, 1, 1)
             Rectangle(pos=(20, self.ai_y), size=(PAD_W, PAD_H))
             Rectangle(pos=(w-20-PAD_W, self.player_y), size=(PAD_W, PAD_H))
-            # ball
             Color(1, 1, 0, 1)
             Ellipse(pos=(self.ball_x - BALL//2, self.ball_y - BALL//2), size=(BALL, BALL))

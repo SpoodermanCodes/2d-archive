@@ -1,6 +1,7 @@
 import random
 from kivy.uix.screenmanager import Screen
 from kivy.uix.label import Label
+from kivy.uix.floatlayout import FloatLayout
 from kivy.graphics import Color, Rectangle, Ellipse
 from kivy.clock import Clock
 from kivy.core.window import Window
@@ -13,12 +14,14 @@ BLOCK = 18
 class SnakeScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.score_label = Label(pos=(Window.width * 0.4, Window.height - 40), font_size=18, color=(1,1,1,1))
-        self.hi_label    = Label(pos=(Window.width * 0.65, Window.height - 40), font_size=18, color=(1,1,1,1))
-        self.msg_label   = Label(text='Swipe to start', pos=(Window.width*0.3, Window.height//2 - 20), font_size=22, color=(1,1,0,1))
-        self.add_widget(self.score_label)
-        self.add_widget(self.hi_label)
-        self.add_widget(self.msg_label)
+        layout = FloatLayout()
+        self.score_label = Label(size_hint=(None, None), pos_hint={'center_x': 0.55, 'top': 0.99}, font_size=18, color=(1,1,1,1))
+        self.hi_label    = Label(size_hint=(None, None), pos_hint={'center_x': 0.8,  'top': 0.99}, font_size=18, color=(1,1,1,1))
+        self.msg_label   = Label(text='Swipe to start', size_hint=(None, None), pos_hint={'center_x': 0.5, 'center_y': 0.5}, font_size=22, color=(1,1,0,1))
+        layout.add_widget(self.score_label)
+        layout.add_widget(self.hi_label)
+        layout.add_widget(self.msg_label)
+        self.add_widget(layout)
         self._clock = None
         self.touch_start = None
 
@@ -109,19 +112,14 @@ class SnakeScreen(Screen):
     def _draw(self):
         self.canvas.before.clear()
         with self.canvas.before:
-            # bg
             Color(0, 0, 0, 1)
             Rectangle(pos=(0, 0), size=(Window.width, Window.height))
-            # header
             Color(0.1, 0.1, 0.1, 1)
             Rectangle(pos=(0, Window.height - HEADER), size=(Window.width, HEADER))
-            # title
-            # food
             Color(1, 0, 0, 1)
             Rectangle(pos=(self.food[0], self.food[1]), size=(BLOCK, BLOCK))
             Color(0.5, 0.2, 0, 1)
             Rectangle(pos=(self.food[0] + BLOCK//2 - 2, self.food[1] + BLOCK - 4), size=(3, 5))
-            # snake
             for i, seg in enumerate(self.snake):
                 Color(*DARK_GREEN) if i == 0 else Color(*GREEN)
                 Rectangle(pos=(seg[0]+1, seg[1]+1), size=(BLOCK-2, BLOCK-2))
