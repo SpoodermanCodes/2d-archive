@@ -97,7 +97,7 @@ Scores are saved automatically to `scores.json` in the project root after each g
 git init
 git add .
 git commit -m "initial commit"
-git remote add origin https://github.com/<your-username>/arcade-hub.git
+git remote add origin https://github.com/<your-username>/2d-archive.git
 git push -u origin main
 ```
 
