@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Kivy / Buildozer
+.buildozer/
+bin/
+*.apk
+*.aab
+*.ipa
+*.spec.bak
+
+# Scores (auto-generated at runtime)
+scores.json
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Assets (add your own — not tracked by default)
+assets/sounds/*
+assets/fonts/*
+assets/images/*
+!assets/sounds/.gitkeep
+!assets/fonts/.gitkeep
+!assets/images/.gitkeep

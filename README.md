@@ -1,84 +1,117 @@
-# Snake Game
+# 🕹 Arcade Hub
 
-A classic Snake game built with Python and Pygame featuring modern enhancements and polished visuals.
+A multi-game arcade hub built with Python + Kivy. Runs on desktop and deploys to Android/iOS via Buildozer. Five classic games in a single launcher with persistent high scores and full touch support.
 
-## Features
+---
 
-- **Animated Snake**: Dark green head with eyes and bright green body
-- **Smart Food System**: Red apples with stems that never spawn on the snake
-- **Progressive Difficulty**: Speed increases as your score grows
-- **Score Tracking**: Current score and high score display
-- **Game Over & Restart**: Press any key to restart after game over
-- **Custom Logo Support**: Logo display in the header
+## Games
+
+- 🐍 **Snake** — swipe to steer, speed increases as you score
+- 🟦 **Tetris** — swipe to move, tap to rotate, swipe down to hard drop
+- 🏓 **Pong** — drag your paddle, beat the AI, first to 7 wins
+- 👾 **Space Invaders** — drag to move, tap to shoot, enemies fire back in waves
+- 🐦 **Flappy Bird** — tap to flap, survive the pipes
+
+---
+
+## Architecture
+
+Each game is a self-contained Kivy `Screen` loaded into a central `ScreenManager`. The main menu is the only screen that knows about all games — individual game screens have zero coupling to each other.
+
+```
+arcade-hub/
+├── main.py                  # app entry point, ScreenManager, main menu
+├── games/
+│   ├── snake.py
+│   ├── tetris.py
+│   ├── pong.py
+│   ├── space_invaders.py
+│   └── flappy_bird.py
+├── shared/
+│   ├── constants.py         # colors, block sizes, tetromino shapes
+│   ├── scores.py            # persistent high score read/write (scores.json)
+│   └── ui.py                # shared back button widget
+├── assets/
+│   ├── fonts/
+│   ├── images/
+│   └── sounds/
+├── requirements.txt
+├── buildozer.spec           # Android/iOS packaging config
+└── scores.json              # auto-generated at runtime, not tracked by git
+```
+
+---
 
 ## Controls
 
-- **Arrow Keys**: Control snake direction (Up, Down, Left, Right)
-- **Any Key**: Restart game after game over
-- **X Button**: Close game
+| Game | Move | Action |
+|---|---|---|
+| Snake | Swipe direction | — |
+| Tetris | Swipe left / right | Tap = rotate, Swipe down = hard drop |
+| Pong | Drag paddle | — |
+| Space Invaders | Drag ship | Tap = shoot |
+| Flappy Bird | — | Tap = flap |
 
-## Requirements
+---
 
-- Python 3.x
-- Pygame
+## Setup
 
-## Installation
+**Step 1 — Install dependencies**
 
-1. Clone this repository:
-```bash
-git clone <repository-url>
-cd snakeGame
-```
-
-2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Add your logo (optional):
-   - Place a `logo.png` file (40x30 pixels recommended) in the game directory
-
-## How to Run
+**Step 2 — Run**
 
 ```bash
-python snakeGame.py
+python main.py
 ```
 
-## Game Rules
+---
 
-- Use arrow keys to control the snake
-- Eat red apples to grow and increase your score (+10 points each)
-- Avoid hitting walls or your own body
-- Game speed increases every 50 points
-- Try to beat your high score!
+## Mobile Build (Android)
 
-## File Structure
+Requires Linux or WSL. Run from inside the project folder:
 
-```
-snakeGame/
-├── snakeGame.py      # Main game file
-├── requirements.txt  # Python dependencies
-├── logo.png          # Logo image (optional)
-├── README.md         # This file
-└── screenshots/      # Game screenshots
-    ├── start_screen.png
-    ├── gameplay.png
-    └── game_over.png
+```bash
+pip install buildozer
+buildozer android debug deploy run
 ```
 
-## Screenshots
+The `buildozer.spec` targets API 33, `arm64-v8a` and `armeabi-v7a`. No changes needed for a basic build.
 
-### Start Screen
-![Start Screen](screenshots/start_screen.png)
+> iOS builds use `kivy-ios` on macOS — see the [Kivy iOS docs](https://kivy.org/doc/stable/guide/packaging-ios.html).
 
-### Gameplay
-![Gameplay](screenshots/gameplay.png)
+---
 
-### Game Over
-![Game Over](screenshots/game_over.png)
+## High Scores
 
+Scores are saved automatically to `scores.json` in the project root after each game session. The file is excluded from version control via `.gitignore` — it is generated fresh on first run.
 
+---
+
+## Push to GitHub
+
+```bash
+git init
+git add .
+git commit -m "initial commit"
+git remote add origin https://github.com/<your-username>/arcade-hub.git
+git push -u origin main
+```
+
+---
+
+## Developer Notes
+
+- Each game's speed or difficulty lives inside its own file — there is no shared difficulty config yet. If you want to tune values (e.g. Flappy Bird gravity, Space Invaders fire rate), look for the constants at the top of each game file.
+- The Tetris line-clear scoring uses the standard Nintendo system: 100 / 300 / 500 / 800 for 1 / 2 / 3 / 4 lines.
+- Pong AI speed is fixed at 3px/frame — increase the value in `pong.py` to make the AI harder.
+- Touch swipe detection uses a 20px minimum threshold. On high-DPI screens this may feel insensitive — increase the threshold in each game's `on_touch_up` if needed.
+
+---
 
 ## License
 
-This project is open source and available under the MIT License.
+MIT
